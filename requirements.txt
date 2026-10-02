@@ -1,0 +1,9 @@
+torch>=2.0
+torch-geometric>=2.5
+transformers>=4.40
+multimolecule>=0.0.4
+rdkit>=2023.9
+numpy
+pandas
+scikit-learn
+scipy

@@ -1,0 +1,24 @@
+# data, features and outputs (not distributed)
+data/
+features/
+ckpt/
+fig/
+*.pt
+*.pth
+*.csv
+*.xlsx
+*.log
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+env/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
