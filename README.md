@@ -61,6 +61,27 @@ Useful flags: `--ablation {none,no_film,no_hyper,gcn,no_relhead,no_graph}`,
 NCDRUG_DMODEL=256 NCDRUG_LR=1e-3 NCDRUG_DROPOUT=0.2 python case_study_loo.py
 ```
 
+## Interactive web demo
+
+A lightweight [Gradio](https://www.gradio.app/) app wraps the trained model so it
+can be used without any coding:
+
+```bash
+python app.py        # serves http://127.0.0.1:7860
+```
+
+On first launch it trains a model on all known associations and caches it to
+`ckpt/hisca_demo.pt` (set `NCDRUG_DEMO_EPOCHS` to change the number of epochs);
+later launches load the cached checkpoint. The interface has two panels:
+
+- **Predict & explain** — enter any ncRNA–drug pair and get the predicted
+  association probability together with the interpretable region × substructure
+  interaction map.
+- **Drug → top ncRNAs** — rank all candidate ncRNAs for a selected drug
+  (optionally filtered by ncRNA type) for virtual screening.
+
+Pre-computed features (see *Usage* step 1) must be available before launching.
+
 ## Repository layout
 
 ```
@@ -73,6 +94,8 @@ utils.py       training utilities, negative sampling, metrics
 main.py        training / evaluation entry point
 build_*.py     feature-construction scripts
 case_study_loo.py   leave-one-drug-out case study
+make_heatmap.py     region x substructure interaction-map figures
+app.py         interactive Gradio web demo
 run_*.sh       experiment driver scripts
 ```
 
