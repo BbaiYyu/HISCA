@@ -61,26 +61,39 @@ Useful flags: `--ablation {none,no_film,no_hyper,gcn,no_relhead,no_graph}`,
 NCDRUG_DMODEL=256 NCDRUG_LR=1e-3 NCDRUG_DROPOUT=0.2 python case_study_loo.py
 ```
 
-## Interactive web demo
+## Interactive local web platform
 
-A lightweight [Gradio](https://www.gradio.app/) app wraps the trained model so it
-can be used without any coding:
+The Gradio platform includes a scientific home page, pair prediction, region ×
+substructure explanation maps, and drug-based Top-K ranking. Home-page buttons
+open the corresponding analysis tabs.
 
-```bash
-python app.py        # serves http://127.0.0.1:7860
-```
+**[中文本地部署指南 / Local deployment guide](docs/LOCAL_DEPLOYMENT_zh.md)**
 
-On first launch it trains a model on all known associations and caches it to
-`ckpt/hisca_demo.pt` (set `NCDRUG_DEMO_EPOCHS` to change the number of epochs);
-later launches load the cached checkpoint. The interface has two panels:
+~~~bash
+# Activate Python 3.10 and install the appropriate Torch wheel first.
+python -m pip install -r requirements-web.txt
+python check_deployment.py
+python app.py
+# Open http://127.0.0.1:7860
+~~~
 
-- **Predict & explain** — enter any ncRNA–drug pair and get the predicted
-  association probability together with the interpretable region × substructure
-  interaction map.
-- **Drug → top ncRNAs** — rank all candidate ncRNAs for a selected drug
-  (optionally filtered by ncRNA type) for virtual screening.
+Windows: run start_local.bat in an activated environment.
+Linux/macOS: run sh start_local.sh.
 
-Pre-computed features (see *Usage* step 1) must be available before launching.
+**Data, precomputed features, and weights are not bundled, and no public deployment
+bundle download is currently provided.** Obtain matching files from the maintainer
+or prepare them with the training pipeline. The app loads ckpt/hisca_demo.pt;
+missing/incompatible weights stop startup rather than silently retraining.
+
+Override paths using NCDRUG_DATA_DIR, NCDRUG_FEAT_DIR, NCDRUG_CKPT_DIR or
+NCDRUG_DEMO_CKPT. NCDRUG_PORT changes the local port. Inference runs locally;
+explanation maps may download the ChemBERTa tokenizer on first use.
+For offline use, prepare NCDRUG_TOKENIZER_DIR as described in the guide.
+
+The cover is an AI-generated conceptual illustration, not experimental data.
+Predictions and relative interaction maps support research hypotheses, not
+validated biological mechanisms.
+
 
 ## Repository layout
 

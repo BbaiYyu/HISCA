@@ -22,3 +22,8 @@ env/
 Thumbs.db
 .idea/
 .vscode/
+
+# Local web runtime
+.runtime/
+work/
+*.pid
