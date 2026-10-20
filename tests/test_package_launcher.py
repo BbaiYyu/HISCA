@@ -1,4 +1,4 @@
-"""Focused stdlib regression tests for the lightweight launcher; no model imports."""
+
 import contextlib
 import io
 import json
@@ -20,7 +20,7 @@ PROJECT = Path(__file__).resolve().parents[1]
 
 class LauncherTests(unittest.TestCase):
     def setUp(self):
-        # Keep all temporary working files with this task, not on the C drive.
+
         self.temporary = tempfile.TemporaryDirectory(prefix="launcher-test-", dir=str(PROJECT / "tests"))
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
@@ -115,6 +115,9 @@ class LauncherTests(unittest.TestCase):
         self.assertEqual(env["NCDRUG_EDGE_CSV"], str(base / "data/merged_clean.csv"))
         self.assertEqual(env["CUDA_VISIBLE_DEVICES"], "")
         self.assertEqual(env["HF_HUB_OFFLINE"], "1")
+        self.assertEqual(env["NCDRUG_V2_HYPER"], "0")
+        self.assertEqual(env["NCDRUG_INT_CENTER"], "0")
+        self.assertEqual(env["NCDRUG_INT_NORM"], "0")
         self.assertEqual(env["HISCA_TEST_KEEP"], "preserved")
         for name in ("PIP_CACHE_DIR", "MPLCONFIGDIR", "HF_HOME", "GRADIO_TEMP_DIR"):
             self.assertEqual(Path(env[name]).parent, home)
@@ -143,7 +146,7 @@ class LauncherTests(unittest.TestCase):
         env.update(PYTHONPATH=str(PROJECT / "src"), PYTHONDONTWRITEBYTECODE="1",
                    HISCA_HOME=str(self.root / "unused-home"))
         env.pop("PYTHONHOME", None)
-        # -S disables site-packages: Torch/NumPy/Gradio are unavailable here.
+
         for argument in ("--help", "--version"):
             with self.subTest(argument=argument):
                 result = subprocess.run([sys.executable, "-S", "-m", "hisca", argument],

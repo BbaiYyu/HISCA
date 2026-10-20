@@ -1,4 +1,4 @@
-"""Check deployment inputs without importing Torch or starting the model."""
+
 import argparse
 import os
 from pathlib import Path
@@ -18,12 +18,12 @@ def validate_runtime(data_dir=None, feat_dir=None, checkpoint=None, edge_csv=Non
     missing = [str(p) for p in required if not p.is_file()]
     if missing:
         raise FileNotFoundError("Missing deployment files:\n  " + "\n  ".join(missing)
-                                + "\nSee docs/LOCAL_DEPLOYMENT_zh.md. "
-                                "Dataset/features/checkpoints are not bundled with this repository.")
+                                + "\nSee docs/INSTALL_zh.md. "
+                                "Get the complete deployment wheel from the GitHub Releases page.")
     return {"data_dir": str(data), "feat_dir": str(feat), "checkpoint": str(ckpt)}
 
 def main():
-    argparse.ArgumentParser(description=__doc__).parse_args()
+    argparse.ArgumentParser(description="Check HISCA deployment files without loading the model.").parse_args()
     try:
         paths = validate_runtime()
     except FileNotFoundError as exc:

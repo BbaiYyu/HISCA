@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
-"""机理分支地基①：抓全量 miRNA→靶基因(ENCORI/starBase, 高置信, 每miRNA取top-K)。
-增量写 JSON 缓存, 可断点续跑。lncRNA/circRNA 暂不抓(数据稀疏, 后议)。
-用法: python build_ncrna_targets.py
-产出 data/ncrna_targets.json  {miRNA_name: [gene,...]}
-"""
+
+
 import os, sys, time, re, json
 import urllib.request
 import pandas as pd
@@ -12,8 +8,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config as C
 
 OUT = os.path.join(C.DATA_DIR, "ncrna_targets.json")
-TOPK = 150          # 每个 miRNA 保留支持度最高的前K个靶基因
-CLIP = 2            # clipExpNum≥2: 至少2个CLIP实验支持(去噪)
+TOPK = 150
+CLIP = 2
 API = ("https://rnasysu.com/encori/api/miRNATarget/?assembly=hg38&geneType=mRNA"
        "&miRNA={mir}&clipExpNum=" + str(CLIP) + "&degraExpNum=0&pancancerNum=0"
        "&programNum=1&program=None&target=all&cellType=all")
@@ -40,7 +36,7 @@ def query(mir):
         rows = [l.split("\t") for l in txt.splitlines()
                 if l and not l.startswith("#") and not l.startswith("miRNAid")]
         if rows:
-            # 列: miRNAid miRNAname geneID geneName geneType chromosome ... clipExpNum ...
+
             scored = []
             for p in rows:
                 if len(p) > 6:

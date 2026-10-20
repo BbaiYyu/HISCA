@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-"""Local HISCA web server. See docs/LOCAL_DEPLOYMENT_zh.md for setup."""
+
+
 import os, csv, base64
 
 os.environ.setdefault("GRADIO_ANALYTICS_ENABLED", "False")
@@ -31,7 +31,7 @@ SMI = {}
 with open(C.DRUG_CSV, encoding="utf-8-sig") as f:
     for row in csv.DictReader(f):
         SMI[row["Drug_Name"]] = row.get("SMILES", "")
-GRAPH = make_graph(DATA, torch.ones(len(DATA.pos.r), dtype=torch.bool), DEVICE)  # 全图(所有已知关联)
+GRAPH = make_graph(DATA, torch.ones(len(DATA.pos.r), dtype=torch.bool), DEVICE)
 
 
 def get_model():
@@ -43,7 +43,7 @@ def get_model():
     except RuntimeError as exc:
         raise RuntimeError("Checkpoint does not match the features/model configuration. "
                            "Use matching data, features, and architecture settings; "
-                           "see docs/LOCAL_DEPLOYMENT_zh.md. " + str(exc)) from exc
+                           "see docs/INSTALL_zh.md. " + str(exc)) from exc
     model.eval()
     print("Loaded trained model: " + CKPT, flush=True)
     return model
@@ -77,14 +77,14 @@ def _heatmap_fig(out, di, rname, drug):
         M = out["M"][0]
         ntok = int(DATA.drug_mask[di].sum())
         toks = mh.drug_tokens(SMI.get(drug, "C"))[:ntok]
-        Mrel = M[0, :, :ntok].cpu().numpy()            # relation 0; [32, ntok]
+        Mrel = M[0, :, :ntok].cpu().numpy()
         gl = mh.classify_tokens(toks)
         order = [gg for gg in dict.fromkeys(gl) if gg != "special"]
         if not order:
             return None
         Magg = np.stack([Mrel[:, [j for j, x in enumerate(gl) if x == gg]].mean(1) for gg in order], axis=1)
-        # 完全双向去均值: 去掉药物子结构主效应(列)与 RNA 区域主效应(行),
-        # 只留二维交互残差 -> 任意药对都自然居中于 0, 发散色图红蓝兼有(不再全红)
+
+
         Mshow = Magg.astype(float)
         Mshow = Mshow - Mshow.mean(axis=0, keepdims=True)
         Mshow = Mshow - Mshow.mean(axis=1, keepdims=True)
@@ -93,7 +93,7 @@ def _heatmap_fig(out, di, rname, drug):
             Mshow = gaussian_filter(Mshow, sigma=0.7)
         except Exception:
             pass
-        # 归一化到 [-1,1] 相对强度(避免色标出现 1e-20 这种难看的指数)
+
         scale = np.percentile(np.abs(Mshow), 96) or 1e-12
         Mshow = np.clip(Mshow / scale, -1.0, 1.0)
         fig, ax = plt.subplots(figsize=(max(5, len(order) * 1.1), 5.2))

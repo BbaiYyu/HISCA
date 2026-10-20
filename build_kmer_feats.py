@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
-"""为交互图可解释性构建 RNA 的 k-mer 区域特征(位置有区分度, 破解RNA-FM区域雷同)。
-每条RNA → 32区域 × 64维(3-mer频率)。与 rna_feats.pt 的 name2idx 对齐。
-产出 features/rna_kmer.pt {'feat':[N,32,64],'name2idx':{...},'k':3}
-用法: python build_kmer_feats.py
-"""
+
+
 import os, sys, csv, itertools
 import numpy as np
 import torch
@@ -16,8 +12,8 @@ csv.field_size_limit(10 ** 8)
 K = 3
 BASES = "AUGC"
 KMERS = {"".join(p): i for i, p in enumerate(itertools.product(BASES, repeat=K))}
-D = len(KMERS)          # 64
-NREG = C.K_RNA_REGION   # 32
+D = len(KMERS)
+NREG = C.K_RNA_REGION
 
 
 def read_csv(p):
@@ -35,9 +31,9 @@ def seq2regions(seq):
         j = KMERS.get(s[i:i + K])
         if j is not None:
             onehot[i, j] = 1
-    x = torch.tensor(onehot).t().unsqueeze(0)                  # [1,64,L]
-    xp = F.adaptive_avg_pool1d(x, min(NREG, L)).squeeze(0).t()  # [nreg,64]
-    if xp.shape[0] < NREG:                                     # 极短序列补零到32
+    x = torch.tensor(onehot).t().unsqueeze(0)
+    xp = F.adaptive_avg_pool1d(x, min(NREG, L)).squeeze(0).t()
+    if xp.shape[0] < NREG:
         xp = torch.cat([xp, torch.zeros(NREG - xp.shape[0], D)], 0)
     return xp
 

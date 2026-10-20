@@ -1,10 +1,5 @@
-# -*- coding: utf-8 -*-
-"""为药物构建【原子级分子图】(可训练GCN用)——比静态指纹更强的结构编码。
-原子特征 69 维(元素/杂化/度/电荷/氢数/芳香/自由基/成环), 与主流药物GNN一致。
-按 drug_feats.pt 的 name2idx 顺序输出 278 个图。
-产出 features/drug_graphs.pt {'graphs':[(x[n,69], edge_index[2,e]), ...], 'name2idx':{...}}
-用法: python build_drug_graphs.py
-"""
+
+
 import os, sys, csv
 import torch
 

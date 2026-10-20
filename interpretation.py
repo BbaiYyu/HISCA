@@ -1,4 +1,4 @@
-"""Token groups for the local web explanation plot (heuristic, not atom attribution)."""
+
 import os
 from functools import lru_cache
 import config as C
@@ -14,7 +14,7 @@ def drug_tokens(smiles):
     return tok.convert_ids_to_tokens(ids)
 
 def classify_tokens(toks):
-    """启发式: 把 ChemBERTa(≈SMILES字符)token 归到化学子结构组(不依赖RDKit)。"""
+
     g = []
     for i, t in enumerate(toks):
         s = str(t).replace("Ġ", "").strip()
@@ -33,7 +33,7 @@ def classify_tokens(toks):
         elif s in ("P", "S", "s", "p"):
             g.append("Other heteroatom")
         else:
-            g.append(None)                     # 键/支链/环闭合符 → 归前一原子的组
+            g.append(None)
     last = "Aliphatic C"
     for i in range(len(g)):
         if g[i] is None:

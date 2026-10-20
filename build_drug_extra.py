@@ -1,10 +1,5 @@
-# -*- coding: utf-8 -*-
-"""为药物补【分子结构指纹】(ECFP4/Morgan, 2048位)——ChemBERTa是序列级语言模型,
-易漏子结构/官能团信息; 指纹显式编码半径2的子结构, 是药物响应预测的强特征。
-按建模用到的 drug_names(与 drug_feats.pt 的 name2idx 对齐)输出。
-产出 features/drug_extra.pt {'ecfp':[N_drug,2048], 'name2idx':{...}}
-用法: python build_drug_extra.py
-"""
+
+
 import os, sys, csv
 import numpy as np
 import torch
@@ -13,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config as C
 
 from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors   # 用它取Morgan指纹, 避开AllChem在NumPy2.x下崩的3D/shape模块
+from rdkit.Chem import rdMolDescriptors
 from rdkit import RDLogger
 RDLogger.DisableLog("rdApp.*")
 
@@ -27,7 +22,7 @@ def read_csv(path):
 
 
 def main():
-    # 与 drug_feats.pt 的顺序严格对齐(load_all 用它的 name2idx)
+
     drug_feats = torch.load(os.path.join(C.FEAT_DIR, "drug_feats.pt"))
     name2idx = drug_feats["name2idx"]
     smi = {r["Drug_Name"]: r.get("SMILES", "") for r in read_csv(C.DRUG_CSV)}
@@ -40,7 +35,7 @@ def main():
             miss += 1
             continue
         fp = rdMolDescriptors.GetMorganFingerprintAsBitVect(mol, RADIUS, nBits=N_BITS)
-        for bit in fp.GetOnBits():        # 手动置位, 不用 ConvertToNumpyArray(可能崩)
+        for bit in fp.GetOnBits():
             ecfp[i, bit] = 1.0
     torch.save({"ecfp": torch.from_numpy(ecfp), "name2idx": name2idx},
                os.path.join(C.FEAT_DIR, "drug_extra.pt"))

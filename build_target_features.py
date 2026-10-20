@@ -1,19 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-把靶点从"可学习ID向量"做实成"真蛋白特征"：ESM蛋白向量 ⊕ onco/TSG角色。
-覆盖 target_feats.pt 里全部靶点（vocab 的 key = UniProt 号）。
 
-流程：
-  ① 读 vocab(UniProt→id) + drug_targets.csv(UniProt→Gene)
-  ② 抓 UniProt 序列（缓存+断点续跑）
-  ③ ESM 编码 → 每个靶点一个稠密向量（残基平均池化）
-  ④ 拼 onco/TSG 角色 one-hot（oncokb.tsv + tsgene.txt，经 UniProt→Gene）
-  ⑤ 写回 target_feats.pt：新增 'feat' [num_targets+1, d_feat]（行0=padding=0），'d_feat'
 
-用法:
-  python build_target_features.py                       # 默认 esm2_t12_35M(480维)
-  python build_target_features.py --esm facebook/esm2_t30_150M_UR50D   # 更强(640维)
-"""
 import os, sys, csv, json, argparse, time, urllib.request
 import torch
 
@@ -23,12 +9,12 @@ import config as C
 HERE = os.path.dirname(os.path.abspath(__file__))
 FEAT = os.path.join(C.FEAT_DIR, "target_feats.pt")
 DRUG_TGT = os.path.join(C.DATA_DIR, "drug_targets.csv")
-REF = os.path.join(C.DATA_DIR, "..", "原始数据库", "ref")   # oncokb/tsgene 若不在 data/ 就去原始库
+REF = os.path.join(C.DATA_DIR, "..", "原始数据库", "ref")
 SEQ_CACHE = os.path.join(C.FEAT_DIR, "_uniprot_seq_cache.json")
 
 
 def find_ref(name):
-    """在 data/ref 或 原始数据库/ref 找注释文件。"""
+
     for d in (os.path.join(C.DATA_DIR, "ref"), REF):
         p = os.path.join(d, name)
         if os.path.exists(p):
@@ -37,7 +23,7 @@ def find_ref(name):
 
 
 def fetch_sequences(accs):
-    """抓 UniProt 序列，缓存到 SEQ_CACHE，断点续跑。返回 {acc: seq or ''}。"""
+
     cache = {}
     if os.path.exists(SEQ_CACHE):
         cache = json.load(open(SEQ_CACHE, encoding="utf-8"))
@@ -65,7 +51,7 @@ def fetch_sequences(accs):
 
 
 def esm_embed(seqs, model_name, device, max_len=1022, batch=8):
-    """ESM 编码，残基平均池化 → {acc: vector}。空序列返回 None。"""
+
     from transformers import AutoTokenizer, EsmModel
     tok = AutoTokenizer.from_pretrained(model_name)
     mdl = EsmModel.from_pretrained(model_name).to(device).eval()
@@ -78,10 +64,10 @@ def esm_embed(seqs, model_name, device, max_len=1022, batch=8):
             chunk = items[b:b + batch]
             enc = tok([s for _, s in chunk], return_tensors="pt",
                       padding=True, truncation=True, max_length=max_len + 2).to(device)
-            h = mdl(**enc).last_hidden_state              # [n,L,d]
+            h = mdl(**enc).last_hidden_state
             m = enc["attention_mask"].unsqueeze(-1).float()
-            # 去掉 cls/eos：这里简单用 attention_mask 平均（含特殊符影响很小）
-            vec = (h * m).sum(1) / m.sum(1).clamp(min=1)   # [n,d]
+
+            vec = (h * m).sum(1) / m.sum(1).clamp(min=1)
             for (a, _), v in zip(chunk, vec.cpu()):
                 out[a] = v
             if (b + batch) % 80 == 0:
@@ -90,7 +76,7 @@ def esm_embed(seqs, model_name, device, max_len=1022, batch=8):
 
 
 def build_roles(id2uni):
-    """onco/TSG 角色 one-hot：[is_onco, is_tsg]（可同时为1）。经 UniProt→Gene 映射。"""
+
     u2g = {}
     for r in csv.DictReader(open(DRUG_TGT, encoding="utf-8-sig")):
         up, g = r.get("Target_UniProt", "").strip(), r.get("Target_Gene", "").strip()
@@ -128,7 +114,7 @@ def main():
     device = C.DEVICE
 
     t = torch.load(FEAT)
-    vocab = t["vocab"]                                  # UniProt -> id (1..num_targets)
+    vocab = t["vocab"]
     num = t["num_targets"]
     id2uni = {int(i): str(u) for u, i in vocab.items()}
     accs = sorted(set(id2uni.values()))
@@ -140,7 +126,7 @@ def main():
     d_role = 2
     d_feat = d_esm + d_role
 
-    feat = torch.zeros(num + 1, d_feat)                 # 行0=padding
+    feat = torch.zeros(num + 1, d_feat)
     miss = 0
     for tid in range(1, num + 1):
         uni = id2uni.get(tid)

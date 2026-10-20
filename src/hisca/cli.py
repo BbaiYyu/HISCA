@@ -1,4 +1,4 @@
-"""Install once with pip, then run `hisca`; no Notebook or Conda required."""
+
 import argparse
 from contextlib import contextmanager
 from datetime import datetime
@@ -35,7 +35,7 @@ def setup_lock(home):
     home.mkdir(parents=True, exist_ok=True)
     handle = (home / "setup.lock").open("a+b")
     try:
-        # Windows can lock a byte beyond EOF; do not read an already locked byte.
+
         handle.seek(0)
         try:
             if os.name == "nt":
@@ -87,7 +87,7 @@ def choose_bundle(home, source=None):
                     return choose_bundle(home, selected)
             raise FileNotFoundError("Model data are absent from the lightweight package. "
                 "Install the full wheel, or run: hisca --bundle PATH_TO_ZIP_OR_FOLDER. "
-                "No public model download URL is configured.")
+                "Get the full wheel at https://github.com/BbaiYyu/HISCA/releases/latest .")
     temp = config.with_suffix(".tmp")
     temp.write_text(json.dumps({"data_root": str(base)}, indent=2), encoding="utf-8")
     temp.replace(config)
@@ -102,8 +102,9 @@ def process_env(home, base=None):
         env[name] = str(path)
     env.update(PYTHONUTF8="1", PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1",
                GRADIO_ANALYTICS_ENABLED="False", CUDA_VISIBLE_DEVICES="",
-               OMP_NUM_THREADS="4", MKL_NUM_THREADS="4")
-    # Keep a research shell's Python modules out of the isolated application.
+               OMP_NUM_THREADS="4", MKL_NUM_THREADS="4", NCDRUG_V2_HYPER="0",
+               NCDRUG_INT_HEADS="1", NCDRUG_INT_CENTER="0", NCDRUG_INT_NORM="0")
+
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
     if base:

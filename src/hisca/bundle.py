@@ -1,4 +1,4 @@
-"""Local model bundle validation and selective, staged ZIP import (stdlib only)."""
+
 from pathlib import Path, PurePosixPath
 import hashlib
 import shutil
@@ -60,7 +60,7 @@ def import_zip(source, home):
         return dest.resolve()
     finally:
         if stage.exists():
-            # Only remove the staging directory created here, never a supplied path.
+
             stage.resolve().relative_to((home / "bundles").resolve())
             if not stage.name.startswith("import-"):
                 raise RuntimeError("Unexpected staging directory")

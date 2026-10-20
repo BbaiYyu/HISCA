@@ -1,18 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-阶段1 · 编码器：把 序列 / SMILES / 靶点 变成模型能吃的数字，预计算并存盘。
-产出（存到 config.FEAT_DIR）：
-    rna_feats.pt   {'feat':[N_rna,K,D_RNA_ENC], 'name2idx':{...}}       每条 RNA → K 个区域特征
-    drug_feats.pt  {'feat':[N_drug,Ld,D_DRUG_ENC], 'mask':[N_drug,Ld], 'name2idx':{...}}
-    target_feats.pt{'tgt_ids':[N_drug,T], 'mask':[N_drug,T], 'vocab':{uniprot:idx}, 'num_targets':int}
-说明：
-    - RNA 逐核苷酸特征太大，池化成固定 K 个"区域"（对应交互图 M 的行）。
-    - 药物分子小，按 token 存（M 的列）。
-    - 靶点集合"不池化"，每药存一串靶点 id（padding 到 T）。
-用法：
-    python encoders.py            # 用外部基础模型（RNA-FM / ChemBERTa）
-    python encoders.py --fallback # 离线占位编码器，先把管线跑通
-"""
+
+
 import os, csv, sys, argparse
 import numpy as np
 import torch
@@ -21,15 +8,12 @@ import torch.nn.functional as F
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config as C
 
-csv.field_size_limit(10 ** 8)   # ncRNA.csv 有超长序列
+csv.field_size_limit(10 ** 8)
 
 
-# ============================================================ RNA 编码器
 def _load_rnafm():
-    """稳健加载 RNA-FM 预训练权重。
-    本地 multimolecule 0.0.7 直接 from_pretrained 会因 checkpoint 键前缀不匹配
-    （ckpt 是 `model.*`/`encoder.layer_norm`，旧类要 `*`/`encoder.emb_layer_norm_after`）
-    导致 backbone 全部随机初始化。这里手动重映射后灌入，保证用的是真预训练权重。"""
+
+
     import glob
     from safetensors.torch import load_file
     from multimolecule import RnaFmModel, RnaFmConfig
@@ -57,41 +41,41 @@ def _load_rnafm():
 
 
 class RNAEncoder:
-    """ncRNA 序列 → 逐核苷酸向量。优先 RNA-FM，失败则用离线占位。"""
+
     def __init__(self, backend="rnafm", device="cpu"):
         self.device = device
         self.backend = backend
         self.dim = C.D_RNA_ENC
         if backend == "rnafm":
-            # RNA-FM 的 HF 官方移植版（官网 .pth 下载被封，改用 multimolecule）
+
             from multimolecule import RnaTokenizer
             self.tok = RnaTokenizer.from_pretrained("multimolecule/rnafm")
             self.model = _load_rnafm().to(device).eval()
-        else:  # fallback：每个核苷酸一个固定随机向量（占位，仅供跑通管线）
+        else:
             g = torch.Generator().manual_seed(0)
-            self.emb = torch.randn(16, self.dim, generator=g)   # A/U/G/C/... 索引
+            self.emb = torch.randn(16, self.dim, generator=g)
             self.vocab = {c: i for i, c in enumerate("AUGCNTaugcnt")}
 
     @torch.no_grad()
     def encode(self, seqs):
-        """seqs: list[str] -> list[Tensor[Li, dim]]（去掉首尾特殊符）。"""
+
         seqs = [(s or "N").upper().replace("T", "U")[: C.RNA_MAX_LEN] for s in seqs]
         if self.backend == "rnafm":
-            # 分块编码：长序列切成 ≤RNA_WINDOW 的窗口，逐段过 RNA-FM 再拼回，一段不丢
+
             W = C.RNA_WINDOW
-            wins = []                                          # (seq_idx, subseq)
+            wins = []
             for i, s in enumerate(seqs):
                 s = s or "N"
                 for b in range(0, len(s), W):
                     wins.append((i, s[b:b + W]))
             per_seq = [[] for _ in seqs]
-            for b in range(0, len(wins), C.ENC_BATCH):         # 窗口按 batch 编码（显存可控）
+            for b in range(0, len(wins), C.ENC_BATCH):
                 grp = wins[b:b + C.ENC_BATCH]
                 texts = [w for _, w in grp]
                 enc = self.tok(texts, return_tensors="pt", padding=True,
                                truncation=True, max_length=W + 2)
                 enc = {k: v.to(self.device) for k, v in enc.items()}
-                out = self.model(**enc).last_hidden_state      # [G,l+2,640]（首cls尾eos）
+                out = self.model(**enc).last_hidden_state
                 for k, (si, w) in enumerate(grp):
                     per_seq[si].append(out[k, 1:len(w) + 1].cpu())
             return [torch.cat(ch, dim=0) if ch else torch.zeros(1, self.dim) for ch in per_seq]
@@ -103,9 +87,8 @@ class RNAEncoder:
             return res
 
 
-# ============================================================ 药物编码器
 class DrugEncoder:
-    """药物 SMILES → 逐 token 向量。优先 ChemBERTa，失败则离线占位。"""
+
     def __init__(self, backend="chemberta", device="cpu"):
         self.device = device
         self.backend = backend
@@ -120,13 +103,13 @@ class DrugEncoder:
 
     @torch.no_grad()
     def encode(self, smiles):
-        """smiles: list[str] -> list[Tensor[Li, dim]]。"""
+
         smiles = [s or "C" for s in smiles]
         if self.backend == "chemberta":
             enc = self.tok(smiles, return_tensors="pt", padding=True,
                            truncation=True, max_length=C.LD_MAX)
             enc = {k: v.to(self.device) for k, v in enc.items()}
-            out = self.model(**enc).last_hidden_state  # [B,L,d]
+            out = self.model(**enc).last_hidden_state
             res = []
             for i in range(len(smiles)):
                 n = int(enc["attention_mask"][i].sum())
@@ -140,18 +123,17 @@ class DrugEncoder:
             return res
 
 
-# ============================================================ 工具
 def region_pool(x, K):
-    """[L, d] 逐核苷酸 → [K, d] 固定区域（自适应平均池化）。"""
+
     if x.shape[0] == 0:
         return torch.zeros(K, x.shape[1])
-    xp = x.t().unsqueeze(0)                       # [1,d,L]
-    xp = F.adaptive_avg_pool1d(xp, K)             # [1,d,K]
-    return xp.squeeze(0).t()                      # [K,d]
+    xp = x.t().unsqueeze(0)
+    xp = F.adaptive_avg_pool1d(xp, K)
+    return xp.squeeze(0).t()
 
 
 def pad_stack(tensors, L_max, dim):
-    """list[Tensor[Li,d]] -> ([N,L_max,d], mask[N,L_max])。"""
+
     N = len(tensors)
     out = torch.zeros(N, L_max, dim)
     mask = torch.zeros(N, L_max, dtype=torch.bool)
@@ -167,14 +149,13 @@ def read_csv(path):
         return list(csv.DictReader(f))
 
 
-# ============================================================ 主流程
 def precompute(backend_override=None):
     os.makedirs(C.FEAT_DIR, exist_ok=True)
     dev = C.DEVICE
     rna_backend  = backend_override or C.RNA_BACKEND
     drug_backend = backend_override or C.DRUG_BACKEND
 
-    # ---- 只对建模用到的 ncRNA / drug 编码（以 merged_final 出现的为准）
+
     edges = read_csv(C.EDGE_CSV)
     rna_names  = sorted({r["ncRNA_Name"] for r in edges})
     drug_names = sorted({r["Drug_Name"] for r in edges})
@@ -182,7 +163,7 @@ def precompute(backend_override=None):
     rna_seq  = {r["ncRNA_Name"]: r.get("Sequence", "") for r in read_csv(C.NCRNA_CSV)}
     drug_smi = {r["Drug_Name"]: r.get("SMILES", "")   for r in read_csv(C.DRUG_CSV)}
 
-    # ---------- RNA → K 区域
+
     print(f"[RNA] {len(rna_names)} 条，backend={rna_backend}")
     renc = RNAEncoder(rna_backend, dev)
     rna_feat = torch.zeros(len(rna_names), C.K_RNA_REGION, C.D_RNA_ENC)
@@ -196,7 +177,7 @@ def precompute(backend_override=None):
     torch.save({"feat": rna_feat, "name2idx": {n: i for i, n in enumerate(rna_names)}},
                os.path.join(C.FEAT_DIR, "rna_feats.pt"))
 
-    # ---------- 药物 → token
+
     print(f"[DRUG] {len(drug_names)} 个，backend={drug_backend}")
     denc = DrugEncoder(drug_backend, dev)
     drug_embs = []
@@ -208,13 +189,13 @@ def precompute(backend_override=None):
                 "name2idx": {n: i for i, n in enumerate(drug_names)}},
                os.path.join(C.FEAT_DIR, "drug_feats.pt"))
 
-    # ---------- 靶点集合（不池化）
+
     build_target_features(drug_names)
     print("阶段1 预计算完成 ->", C.FEAT_DIR)
 
 
 def build_target_features(drug_names):
-    """读 drug_targets.csv → 每药一串靶点 id（padding 到 T_MAX）。缺文件则全空（自动降级）。"""
+
     drug2tgt = {}
     if os.path.exists(C.DRUG_TGT_CSV):
         for r in read_csv(C.DRUG_TGT_CSV):
@@ -224,7 +205,7 @@ def build_target_features(drug_names):
     else:
         print(f"  [警告] 缺 {C.DRUG_TGT_CSV}，靶点特征全空 → 阶段2 走降级")
 
-    vocab = {}                                    # uniprot -> idx（从 1 开始，0 留给 padding）
+    vocab = {}
     for ups in drug2tgt.values():
         for u in ups:
             vocab.setdefault(u, len(vocab) + 1)

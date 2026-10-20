@@ -1,4 +1,4 @@
-"""Build a small launcher wheel, or a full local distribution with HISCA_BUNDLE_SOURCE."""
+
 import os
 from pathlib import Path
 from setuptools import setup, find_packages
@@ -33,7 +33,7 @@ class BuildRuntime(build_py):
                 self.copy_file(str(base / name), str(dest))
 
 full = bool(os.environ.get("HISCA_BUNDLE_SOURCE"))
-setup(name="hisca-web", version="0.3.0+full.20261020" if full else "0.3.0",
+setup(name="hisca-web", version="0.3.1+full.20261020" if full else "0.3.1",
       description="HISCA ncRNA-drug prediction platform launcher",
       long_description=(ROOT / "README.md").read_text(encoding="utf-8"),
       long_description_content_type="text/markdown", url="https://github.com/BbaiYyu/HISCA",
