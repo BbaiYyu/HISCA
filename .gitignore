@@ -32,3 +32,10 @@ work/
 tokenizer/
 notebook_test_output.ipynb
 .local_bundle_manifest.json
+
+# Python distribution build outputs
+build/
+dist/
+*.whl
+*.tar.gz
+src/hisca/_bundle/

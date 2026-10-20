@@ -10,6 +10,32 @@ HISCA is a general ncRNA–drug association model that unifies miRNAs, lncRNAs a
 - a **heterogeneous graph transformer (HGT)** branch over the ncRNA–drug association graph.
 
 
+## Install once, start with `hisca`
+
+HISCA now provides a lightweight Python launcher and a full local wheel option.
+The `hisca` command creates a private CPU environment, installs inference dependencies,
+loads the bundled model, and opens the browser after the platform is ready.
+No Notebook or Conda is required. Windows Python 3.9 CPU is tested.
+
+```powershell
+# Obtain the full wheel from the maintainer, then:
+python -m pip install "./hisca_web-0.3.0+full.20261020-py3-none-any.whl"
+hisca
+```
+
+Alternatively, install the code-only launcher from GitHub (Git required), then import
+an existing complete model ZIP/folder once:
+
+```powershell
+python -m pip install "git+https://github.com/BbaiYyu/HISCA.git"
+hisca --bundle "HISCA_full_bundle.zip"
+```
+
+Later runs only need `hisca` (or `python -m hisca`). First startup needs Internet for
+CPU dependencies. No public model download is currently configured, and this package
+has not been published to PyPI. Source-only installation still needs a matching model
+bundle. See **[中文安装说明](docs/PIP_QUICKSTART_zh.md)** for full details.
+
 ## Notebook and one-click startup
 
 Open **[HISCA_quickstart.ipynb](HISCA_quickstart.ipynb)** in Jupyter and choose
