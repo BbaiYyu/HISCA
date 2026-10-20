@@ -51,7 +51,7 @@ HISCA/
 
 ## 2. 获取代码和创建环境
 
-使用 Python 3.10。依赖版本来自本次验证环境，不表示最新版本。本次实机验证为 Windows + NVIDIA CUDA；Linux、macOS 及 CPU 路径未在本次实机验证。
+使用 Python 3.10。依赖版本来自本次验证环境，不表示最新版本。原 CUDA 环境实际 Python 为 3.9.23（此前记录为 3.10，已更正）；新增 Notebook 入口已通过 Windows 纯 CPU 干净环境验证；Linux/macOS 未在此次实机验证。
 
 ~~~bash
 git clone https://github.com/BbaiYyu/HISCA.git
@@ -203,6 +203,6 @@ python app.py
 
 ## 9. 验证范围与参考
 
-本次使用真实部署文件验证了 Windows + Python 3.10 + PyTorch 2.6.0 CUDA + Gradio 4.44.1 的模型加载、配对预测、热图、Top-K 排序和 miRNA 过滤。也检查了缺少部署文件时的提示。
+本次使用真实部署文件验证了 Windows + Python 3.9.23 + PyTorch 2.6.0 CUDA + Gradio 4.44.1 的模型加载、配对预测、热图、Top-K 排序和 miRNA 过滤。也检查了缺少部署文件时的提示。
 
 参考：[Gradio 4.44.1 Blocks](https://www.gradio.app/4.44.1/docs/gradio/blocks)、[PyTorch 安装说明](https://pytorch.org/get-started/locally/)。

@@ -9,3 +9,10 @@ scikit-learn==1.6.1
 scipy==1.13.1
 matplotlib==3.9.4
 gradio==4.44.1
+
+# Pin the web schema stack for Gradio 4.44 compatibility.
+pydantic==2.10.6
+gradio-client==1.3.0
+fastapi==0.128.8
+starlette==0.49.3
+httpx==0.28.1

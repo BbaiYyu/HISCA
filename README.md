@@ -9,6 +9,21 @@ HISCA is a general ncRNA–drug association model that unifies miRNAs, lncRNAs a
 - a **multi-head bilinear co-attention** module that forms an explicit affinity map between ncRNA sequence regions and drug substructures;
 - a **heterogeneous graph transformer (HGT)** branch over the ncRNA–drug association graph.
 
+
+## Notebook and one-click startup
+
+Open **[HISCA_quickstart.ipynb](HISCA_quickstart.ipynb)** in Jupyter and choose
+**Run All Cells** to check deployment files, prepare dependencies, and launch the
+local web platform. The notebook embeds the live app and also provides a browser link.
+
+On Windows with Python 3.9–3.12 installed:
+- Double-click **one_click_start.bat** to prepare an isolated environment and open the web app.
+- Double-click **open_notebook.bat** to prepare JupyterLab and open the notebook.
+
+First installation needs Internet. Later runs reuse the project environment.
+Use a complete matching deployment bundle; large model/data files are not in Git.
+The first-install CPU path is tested on Windows Python 3.9.23.
+See **[Notebook 中文使用说明](docs/NOTEBOOK_QUICKSTART_zh.md)**.
 ## Installation
 
 ```bash
