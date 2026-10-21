@@ -1,5 +1,7 @@
-include app.py config.py utils.py dataset.py main.py model.py layers.py interpretation.py check_deployment.py
-include home.html requirements-web.txt LICENSE README.md
-include assets/cover_rna_drug.png assets/architecture_latest.png
+include LICENSE README.md
+recursive-include models *.py
+recursive-include web *.py *.html *.png
+recursive-include preprocessing *.py
+recursive-include requirements *.txt
 recursive-include docs *.md
 recursive-include src *.py

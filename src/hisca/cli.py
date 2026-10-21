@@ -23,6 +23,14 @@ def runtime_root():
     packaged = PACKAGE / "_runtime"
     return packaged if packaged.is_dir() else PACKAGE.parents[1]
 
+def runtime_file(name):
+    base = runtime_root()
+    path = base / name
+    if path.is_file():
+        return path
+    locations = {"app.py": "web/app.py", "requirements-web.txt": "requirements/web.txt"}
+    return base / locations.get(name, name)
+
 def default_home():
     if os.environ.get("HISCA_HOME"):
         return Path(os.environ["HISCA_HOME"]).expanduser().resolve()
@@ -144,7 +152,7 @@ print(json.dumps(missing))
 
 def ensure_environment(home):
     python = environment_python(home)
-    requirements = runtime_root() / "requirements-web.txt"
+    requirements = runtime_file("requirements-web.txt")
     env = process_env(home)
     missing = requirements_ready(python, requirements, env)
     if missing:
@@ -181,7 +189,7 @@ def start_server(python, home, base, *, port=None, open_browser=True, timeout=30
     log = logs / ("server-" + datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + str(os.getpid()) + ".log")
     output = log.open("w", encoding="utf-8")
     try:
-        proc = subprocess.Popen([str(python), "-u", str(runtime_root() / "app.py")],
+        proc = subprocess.Popen([str(python), "-u", str(runtime_file("app.py"))],
                                 cwd=str(home), env=env, stdout=output, stderr=subprocess.STDOUT,
                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     finally:

@@ -5,18 +5,30 @@ from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 
 ROOT = Path(__file__).resolve().parent
-RUNTIME_FILES = ["app.py", "config.py", "utils.py", "dataset.py", "main.py", "model.py",
-                 "layers.py", "interpretation.py", "check_deployment.py", "home.html",
-                 "requirements-web.txt", "assets/cover_rna_drug.png", "assets/architecture_latest.png"]
+RUNTIME_FILES = {
+    "app.py": "web/app.py",
+    "interpretation.py": "web/interpretation.py",
+    "check_deployment.py": "web/check_deployment.py",
+    "home.html": "web/home.html",
+    "config.py": "models/config.py",
+    "utils.py": "models/utils.py",
+    "dataset.py": "models/dataset.py",
+    "main.py": "models/main.py",
+    "model.py": "models/model.py",
+    "layers.py": "models/layers.py",
+    "requirements-web.txt": "requirements/web.txt",
+    "assets/architecture_latest.png": "web/assets/architecture_latest.png",
+    "assets/cover_rna_drug.png": "web/assets/cover_rna_drug.png"
+}
 
 class BuildRuntime(build_py):
     def run(self):
         super().run()
         target = Path(self.build_lib) / "hisca" / "_runtime"
-        for name in RUNTIME_FILES:
+        for name, source_name in RUNTIME_FILES.items():
             dest = target / name
             dest.parent.mkdir(parents=True, exist_ok=True)
-            self.copy_file(str(ROOT / name), str(dest))
+            self.copy_file(str(ROOT / source_name), str(dest))
         source = os.environ.get("HISCA_BUNDLE_SOURCE")
         if not source and (Path(self.build_lib) / "hisca" / "_bundle").exists():
             raise RuntimeError("Full bundle found in build output. Use a separate clean build directory for lite.")

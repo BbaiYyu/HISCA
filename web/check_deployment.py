@@ -4,12 +4,13 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+DATA_ROOT = ROOT.parent if ROOT.name == "web" else ROOT
 
 def validate_runtime(data_dir=None, feat_dir=None, checkpoint=None, edge_csv=None):
-    data = Path(data_dir or os.environ.get("NCDRUG_DATA_DIR", ROOT / "data"))
-    feat = Path(feat_dir or os.environ.get("NCDRUG_FEAT_DIR", ROOT / "features"))
+    data = Path(data_dir or os.environ.get("NCDRUG_DATA_DIR", DATA_ROOT / "data"))
+    feat = Path(feat_dir or os.environ.get("NCDRUG_FEAT_DIR", DATA_ROOT / "features"))
     ckpt = Path(checkpoint or os.environ.get("NCDRUG_DEMO_CKPT",
-                Path(os.environ.get("NCDRUG_CKPT_DIR", ROOT / "ckpt")) / "hisca_demo.pt"))
+                Path(os.environ.get("NCDRUG_CKPT_DIR", DATA_ROOT / "ckpt")) / "hisca_demo.pt"))
     edge = Path(edge_csv or os.environ.get("NCDRUG_EDGE_CSV", data / "merged_clean.csv"))
     required = [edge, data / "drugs.csv", ckpt, ROOT / "home.html",
                 ROOT / "assets" / "cover_rna_drug.png",

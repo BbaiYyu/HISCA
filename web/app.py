@@ -1,6 +1,11 @@
 
 
 import os, csv, base64
+import sys
+
+_MODEL_SOURCE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models"))
+if os.path.isdir(_MODEL_SOURCE):
+    sys.path.insert(0, _MODEL_SOURCE)
 
 os.environ.setdefault("GRADIO_ANALYTICS_ENABLED", "False")
 os.environ.setdefault("GRADIO_TEMP_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), ".runtime", "gradio"))

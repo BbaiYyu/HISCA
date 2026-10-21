@@ -3,7 +3,7 @@
 import os, sys, csv
 import torch
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models")))
 import config as C
 from rdkit import Chem
 from rdkit.Chem.rdchem import HybridizationType

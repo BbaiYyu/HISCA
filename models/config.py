@@ -5,10 +5,11 @@ import torch
 
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
+_ROOT = os.path.dirname(_HERE) if os.path.basename(_HERE) == "models" else _HERE
 DATA_DIR = os.environ.get("NCDRUG_DATA_DIR",
-                          os.path.normpath(os.path.join(_HERE, "data")))
-FEAT_DIR = os.environ.get("NCDRUG_FEAT_DIR", os.path.join(_HERE, "features"))
-CKPT_DIR = os.environ.get("NCDRUG_CKPT_DIR", os.path.join(_HERE, "ckpt"))
+                          os.path.normpath(os.path.join(_ROOT, "data")))
+FEAT_DIR = os.environ.get("NCDRUG_FEAT_DIR", os.path.join(_ROOT, "features"))
+CKPT_DIR = os.environ.get("NCDRUG_CKPT_DIR", os.path.join(_ROOT, "ckpt"))
 
 
 EDGE_CSV      = os.environ.get("NCDRUG_EDGE_CSV",

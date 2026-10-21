@@ -4,7 +4,7 @@ import os, sys, time, re, json
 import urllib.request
 import pandas as pd
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models")))
 import config as C
 
 OUT = os.path.join(C.DATA_DIR, "ncrna_targets.json")

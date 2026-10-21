@@ -1,76 +1,54 @@
 # HISCA
 
-Heterogeneous-graph and Interpretable Substructure Co-Attention for ncRNA–drug association prediction.
+**ncRNA–药物关联预测平台**
 
-HISCA provides a local research platform with a home page, ncRNA–drug pair prediction,
-region–substructure interaction heatmaps, and drug-based candidate ranking.
-The model source and the installable platform are maintained in this repository.
+HISCA 在本地电脑运行，提供 ncRNA 与药物的配对预测、区域–子结构交互热图，以及按药物筛选 ncRNA 候选的排序功能。
 
-## 安装并启动 / Install and start
+## 安装并启动
 
-安装 **64 位 Python 3.9–3.12** 后，打开终端执行：
+先安装 **64 位 Python 3.9–3.12**，然后在终端运行：
 
-```powershell
+~~~powershell
 python -m pip install "https://github.com/BbaiYyu/HISCA/releases/download/v0.3.1/hisca_web-0.3.1%2Bfull.20261020-py3-none-any.whl"
 hisca
-```
+~~~
 
-首次运行会自动创建独立 CPU 环境、安装运行依赖、加载模型，并在准备完成后打开浏览器。
-以后只需运行 `hisca`；命令找不到时，使用 `python -m hisca`。
-不需要 Jupyter、Conda 或 GPU。首次安装依赖需要联网；当前已在 Windows Python 3.9.23 CPU 环境实测。
+首次启动会自动准备独立 CPU 环境、安装依赖并加载模型，完成后打开浏览器。以后运行 `hisca` 即可；如果提示找不到命令，使用 `python -m hisca`。
 
-- [下载完整安装包（wheel，包含模型和数据）](https://github.com/BbaiYyu/HISCA/releases/download/v0.3.1/hisca_web-0.3.1+full.20261020-py3-none-any.whl)
-- [中文安装与使用说明](docs/INSTALL_zh.md)
-- [所有发布附件与校验值](https://github.com/BbaiYyu/HISCA/releases/tag/v0.3.1)
+完整安装包已包含模型、匹配数据、预计算特征和 tokenizer，无需自己训练，也不要求显卡、Conda 或 Jupyter。首次下载和安装依赖需要联网。已验证环境为 Windows、Python 3.9.23、CPU。
 
-完整 `.whl` 就是安装包。GitHub 自动生成的 **Source code (zip)** 只含源码，不含预测模型和特征。
-本项目尚未发布到 PyPI；请使用上面的安装地址，不要直接运行 `pip install hisca`。
+- **[安装与使用说明](docs/INSTALL_zh.md)**：逐步安装、网页使用、双击启动和常见问题。
+- **[v0.3.1 下载页](https://github.com/BbaiYyu/HISCA/releases/tag/v0.3.1)**：完整安装包、启动脚本和文件校验值。
+- **[直接下载完整安装包](https://github.com/BbaiYyu/HISCA/releases/download/v0.3.1/hisca_web-0.3.1%2Bfull.20261020-py3-none-any.whl)**：约 720 MiB。
 
-## Web platform
+下载时选择 `.whl` 完整安装包。GitHub 的 **Source code (zip)** 仅含源码，不包含模型数据。本项目尚未发布到 PyPI，请使用上述安装地址。
 
-The browser interface includes:
+## 平台功能
 
-- Home page and model framework illustration.
-- Prediction for an existing ncRNA–drug pair, with an association score and a relative interaction heatmap.
-- Top-K ncRNA ranking for a selected drug, with ncRNA type filtering.
-
-Keep the startup terminal open. Ctrl+C stops its local service. The default address
-is on `127.0.0.1`; an available local port is selected automatically. Inference uses
-the released trained weights and precomputed features. No retraining is performed at startup.
-
-## Source and model
-
-The model consumes RNA-FM and ChemBERTa precomputed representations, RNA k-mer features,
-drug fingerprints and molecular graphs, together with heterogeneous graph information.
-The latest local model implementation is included. Model-code comments and docstrings
-have been removed; code behavior is checked separately from this formatting change.
-
-The packaged Web profile uses `ckpt/hisca_demo.pt`, the matching six feature files and
-local tokenizer. It fixes `NCDRUG_V2_HYPER=0`, `NCDRUG_INT_CENTER=0`, and
-`NCDRUG_INT_NORM=0` to preserve the released checkpoint's inference settings.
-The optional high-order hypergraph construction code is available for research;
-it is not enabled by this deployment checkpoint.
-
-| Path | Purpose |
+| 功能 | 操作与结果 |
 |---|---|
-| `app.py`, `home.html`, `assets/` | Gradio interface and page assets |
-| `src/hisca/` | Installable launcher and model-bundle import |
-| `config.py`, `dataset.py` | Model configuration and data assembly |
-| `model.py`, `layers.py` | Model and neural-network components |
-| `main.py`, `utils.py` | Training, evaluation and sampling |
-| `encoders.py`, `build_*.py` | Feature and optional hyperedge preparation |
-| `requirements-web.txt` | Tested inference dependency versions |
-| `requirements.txt` | Research / feature-preparation dependencies |
-| `docs/` | Installation, research and release notes |
-| `tests/` | Launcher regression tests |
+| 首页 | 查看平台介绍、模型框架和功能入口 |
+| 配对预测与解释 | 选择已有 ncRNA 和药物，查看关联分数及相对交互热图 |
+| 候选排序 | 选择药物、候选数量和 ncRNA 类型，获取 Top-K 排名 |
 
-See [research setup and training](docs/RESEARCH.md) for source use. Superseded Notebook
-launchers and machine-specific experiment wrappers have been removed from the current tree.
-Earlier source remains in Git history.
+服务启动后保留终端窗口，按 `Ctrl+C` 停止。默认只供本机浏览器访问，程序会选择空闲端口。当前输入来自内置列表；分数与热图用于研究探索。
 
-The cover is a conceptual illustration. Predicted scores and relative interaction
-maps are research outputs and should be interpreted with the model's evaluation setting.
+## 源码与开发
 
-## License
+普通使用者按上面的安装方法即可。需要修改网页、构建特征或训练模型时，请阅读 **[源码开发说明](docs/DEVELOPMENT_zh.md)**。
 
-Source code is released under the [MIT License](LICENSE).
+| 目录 | 内容 |
+|---|---|
+| `models/` | 模型结构、数据组装、训练和评估 |
+| `web/` | Gradio 网页、首页模板与图片 |
+| `preprocessing/` | 特征计算和可选高阶超边构建 |
+| `src/hisca/` | 安装后的 `hisca` 命令及环境初始化 |
+| `requirements/` | 网页推理与研究依赖 |
+| `tests/` | 启动器回归检查 |
+| `docs/` | 安装说明与源码开发说明 |
+
+稳定安装包为 **v0.3.1**；模型、数据与预计算特征通过 Release 完整安装包分发。
+
+## 许可
+
+源码采用 [MIT License](LICENSE)。
